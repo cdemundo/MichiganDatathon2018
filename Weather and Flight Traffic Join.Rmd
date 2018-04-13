@@ -1,0 +1,46 @@
+---
+title: "Test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+weather <- read.csv('Data/weather_v2.csv')
+flight_traffic <- read.csv('Data/flight_traffic_v2.csv')
+
+flight_traffic[1:10,]
+
+weather_keeps <- c("airport_id", "datetime", "timeofday", "temperature", "visibility", "wind_direction", "wind_speed", "snow_depth", "cloud_status")
+weather <- weather[weather_keeps]
+orig_weather <- weather
+dest_weather <- weather
+
+colnames(orig_weather)[colnames(orig_weather) == 'airport_id'] <- 'origin_airport'
+
+
+orig_weather <- orig_weather %>%
+  group_by(origin_airport, datetime) %>%
+  summarize(orig_temp = mean(temperature), orig_vis = mean(visibility), orig_wind_dir = mean(wind_direction), orig_wind_speed = mean(wind_speed), orig_snow_depth = mean(snow_depth), orig_cloud_status = mean(cloud_status))
+
+colnames(dest_weather)[colnames(dest_weather) == 'airport_id'] <- 'destination_airport'
+
+dest_weather <- dest_weather %>%
+  group_by(destination_airport, datetime) %>%
+  summarize(dest_temp = mean(temperature), dest_vis = mean(visibility), dest_wind_dir = mean(wind_direction), dest_wind_speed = mean(wind_speed), dest_snow_depth = mean(snow_depth), dest_cloud_status = mean(cloud_status))
+
+#join origin weather info
+flights_weather <- left_join(flight_traffic, orig_weather, by=c("origin_airport", "datetime"))
+flights_weather <- inner_join(flights_weather, dest_weather, by=c("destination_airport", "datetime"))
+
+flights_weather[is.na(flights_weather)] <- 0
+
+write.csv(flights_weather, "Data/flight_traffic_weather.csv")
+
+flights_weather[1:10,]
+orig_weather[1:10,]
+
+```
+
