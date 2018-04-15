@@ -12,51 +12,11 @@ airline_ids_keep <- c("UA", "AA", "US", "F9", "B6", "OO", "AS", "NK", "WN", "DL"
 fares <- fares %>%
   filter(airline_id %in% airline_ids_keep)
 
-fares[1,]
+fares[1, 1:5]
 ```
 
-    ##   quarter airline_id origin_airport destination_airport distance X10 X20
-    ## 1       1         AA            CLT                 SGF      708   2   6
-    ##   X30 X40 X50 X60 X70 X80 X90 X100 X110 X120 X130 X140 X150 X160 X170 X180
-    ## 1  11  15  32  34  43  47  38   40   26   26   19   19   16   25   18   14
-    ##   X190 X200 X210 X220 X230 X240 X250 X260 X270 X280 X290 X300 X310 X320
-    ## 1   18   13   14    7   13   19    5    8    5    3    3    7    9    1
-    ##   X330 X340 X350 X360 X370 X380 X390 X400 X410 X420 X430 X440 X450 X460
-    ## 1    4    3    6    2    2    3    5    0    1    2    2    2    1    0
-    ##   X470 X480 X490 X500 X510 X520 X530 X540 X550 X560 X570 X580 X590 X600
-    ## 1    1    3    1    2    1    1    1    0    0    2    1    0    1    1
-    ##   X610 X620 X630 X640 X650 X660 X670 X680 X690 X700 X710 X720 X730 X740
-    ## 1    1    0    0    1    0    0    0    0    0    0    0    0    0    0
-    ##   X750 X760 X770 X780 X790 X800 X810 X820 X830 X840 X850 X860 X870 X880
-    ## 1    0    0    0    0    1    0    0    0    0    0    0    0    0    0
-    ##   X890 X900 X910 X920 X930 X940 X950 X960 X970 X980 X990 X1000 X1010 X1020
-    ## 1    0    0    0    1    0    0    0    1    0    0    0     0     0     0
-    ##   X1030 X1040 X1050 X1060 X1070 X1080 X1090 X1100 X1110 X1120 X1130 X1140
-    ## 1     0     0     1     0     0     0     0     0     0     0     0     0
-    ##   X1150 X1160 X1170 X1180 X1190 X1200 X1210 X1220 X1230 X1240 X1250 X1260
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1270 X1280 X1290 X1300 X1310 X1320 X1330 X1340 X1350 X1360 X1370 X1380
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1390 X1400 X1410 X1420 X1430 X1440 X1450 X1460 X1470 X1480 X1490 X1500
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1510 X1520 X1530 X1540 X1550 X1560 X1570 X1580 X1590 X1600 X1610 X1620
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1630 X1640 X1650 X1660 X1670 X1680 X1690 X1700 X1710 X1720 X1730 X1740
-    ## 1     1     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1750 X1760 X1770 X1780 X1790 X1800 X1810 X1820 X1830 X1840 X1850 X1860
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1870 X1880 X1890 X1900 X1910 X1920 X1930 X1940 X1950 X1960 X1970 X1980
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X1990 X2000 X2010 X2020 X2030 X2040 X2050 X2060 X2070 X2080 X2090 X2100
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X2110 X2120 X2130 X2140 X2150 X2160 X2170 X2180 X2190 X2200 X2210 X2220
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X2230 X2240 X2250 X2260 X2270 X2280 X2290 X2300 X2310 X2320 X2330 X2340
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X2350 X2360 X2370 X2380 X2390 X2400 X2410 X2420 X2430 X2440 X2450 X2460
-    ## 1     0     0     0     0     0     0     0     0     0     0     0     0
-    ##   X2470 X2480 X2490 X2500
-    ## 1     0     0     0     0
+    ##   quarter airline_id origin_airport destination_airport distance
+    ## 1       1         AA            CLT                 SGF      708
 
 Right now, we don't have actual average fare data for the flight - we have the number of people who paid within a bucket (of size 10). We need to convert this to an average fare paid, per quarter, per route.
 
@@ -139,7 +99,7 @@ unique_route <- unique(route_dist_by_airline$route_dist)
 i <- 0 #limit for example purposes
 for(route in unique_route)
 {
-  if(i<5)
+  if(i<2)
   {
     selected_route <- filter(route_dist_by_airline, route_dist == route)
       
@@ -151,7 +111,7 @@ for(route in unique_route)
 }
 ```
 
-![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-2.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-3.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-4.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-5.png)
+![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-2.png)
 
 Looking at the scatterplots, we have identified no clear trend between fare prices and the delays inherent at different airports. Given this, we look to explore if operational efficiency within airlines affects the fares they are able to charge.
 
@@ -202,17 +162,22 @@ fares_airline_caused_delays <- fares_airline_caused_delays[!is.null(fares_airlin
 unique_airlines <- unique(fares_airline_caused_delays$airline_id)
 
 #For each airline, produce a scatterplot relating fare prices to airline delays
+i <- 0
 for(airline in unique_airlines)
 {
-  selected_airline <- filter(fares_airline_caused_delays, airline_id == airline)
-  
-  plot(selected_airline$delay_minutes, selected_airline$avg_fare, xlab="Delay", ylab="Fare", sub=airline)
-  
-  abline(lm(selected_airline$avg_fare ~ selected_airline$delay_minutes))
-  
-  dev.copy(png,filename=paste(airline, ".png"))
-  dev.off ()
+  if(i<2)
+  {
+    selected_airline <- filter(fares_airline_caused_delays, airline_id == airline)
+    
+    plot(selected_airline$delay_minutes, selected_airline$avg_fare, xlab="Delay", ylab="Fare", sub=airline)
+    
+    abline(lm(selected_airline$avg_fare ~ selected_airline$delay_minutes))
+    
+    dev.copy(png,filename=paste(airline, ".png"))
+    dev.off ()
+  }
+  i <- i+1
 }
 ```
 
-![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-2.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-3.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-4.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-5.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-6.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-7.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-8.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-9.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-10.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-11.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-12.png)
+![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-2.png)
