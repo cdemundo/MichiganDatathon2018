@@ -17,7 +17,7 @@ airline_ids_keep <- c("UA", "AA", "US", "F9", "B6", "OO", "AS", "NK", "WN", "DL"
 fares <- fares %>%
   filter(airline_id %in% airline_ids_keep)
 
-fares[1,]
+fares[1, 1:5]
 ```
 
 Right now, we don't have actual average fare data for the flight - we have the number of people who paid within a bucket (of size 10). We need to convert this to an average fare paid, per quarter, per route. 
@@ -77,17 +77,22 @@ route_dist_by_airline <- route_fares_delays %>%
 #hold distance constant, plot a scatterplot for each distance segment
 unique_route <- unique(route_dist_by_airline$route_dist)
 
+i <- 0 #limit for example purposes
 for(route in unique_route)
 {
-  selected_route <- filter(route_dist_by_airline, route_dist == route)
-    
-  plot(selected_route$avg_delay_airport, selected_route$avg_fare_airport, sub = paste("Flight Distance Between: ", route), main = paste(airline_filter, "Flights"), xlab="Delay (minutes)", ylab="Fare (USD $)")
+  if(i<2)
+  {
+    selected_route <- filter(route_dist_by_airline, route_dist == route)
       
-  abline(lm(selected_route$avg_fare_airport ~ selected_route$avg_delay_airport))
+    plot(selected_route$avg_delay_airport, selected_route$avg_fare_airport, sub = paste("Flight Distance Between: ", route), main = paste(airline_filter, "Flights"), xlab="Delay (minutes)", ylab="Fare (USD $)")
+        
+    abline(lm(selected_route$avg_fare_airport ~ selected_route$avg_delay_airport))
+  }
+  i <- i+1
 }
 ```
 
-Looking at the scatterplots, we have identified no clear trend between fare prices and the delays inherent at different airports.  Given this, we look to explore if operational efficiency within airlines affects the fares they are able to charge. 
+Looking at the scatterplots, we have identified no clear trend between fare prices and the delays inherent at different airports. Given this, we look to explore if operational efficiency within airlines affects the fares they are able to charge. 
 
 ```{r}
 flight_data[is.na(flight_data)] <- 0
