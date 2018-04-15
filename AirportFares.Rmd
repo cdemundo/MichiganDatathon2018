@@ -1,6 +1,6 @@
 ---
 title: "Analysis of Fares and Operational Efficiency"
-output: html_notebook
+output: rmarkdown::github_document
 ---
 ```{r setup, include=FALSE}
 library(tidyverse)
