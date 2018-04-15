@@ -73,18 +73,13 @@ route_fares[1:5,]
 The question we want to examine is: Holding the airline and route distance constant, do higher delays caused at airports correlate with lower fares at that airport?
 
 ``` r
-#dataset created separately to group airlines with delays
+#dataset created separately to group airports with delays
 delays <- read.csv('Data/delays.csv')
 
 #Join route delays to fare information
 route_fares_delays <- inner_join(route_fares, delays, by = 'origin_airport') %>%
   mutate(route_dist = cut(distance, breaks=seq(0,1500, by=100)))
-```
 
-    ## Warning: Column `origin_airport` joining factors with different levels,
-    ## coercing to character vector
-
-``` r
 #Filter to a specific airline for analysis
 airline_filter <- "DL"
 
@@ -96,24 +91,35 @@ route_dist_by_airline <- route_fares_delays %>%
 #hold distance constant, plot a scatterplot for each distance segment
 unique_route <- unique(route_dist_by_airline$route_dist)
 
-i <- 0 #limit for example purposes
+correlations <- numeric(0)
+
+i <- 0 #limit for examples
 for(route in unique_route)
 {
-  if(i<2)
+  selected_route <- filter(route_dist_by_airline, route_dist == route)
+  if(i<1)
   {
-    selected_route <- filter(route_dist_by_airline, route_dist == route)
-      
     plot(selected_route$avg_delay_airport, selected_route$avg_fare_airport, sub = paste("Flight Distance Between: ", route), main = paste(airline_filter, "Flights"), xlab="Delay (minutes)", ylab="Fare (USD $)")
         
     abline(lm(selected_route$avg_fare_airport ~ selected_route$avg_delay_airport))
   }
   i <- i+1
+  cor_res<- cor(selected_route$avg_delay_airport, selected_route$avg_fare_airport)
+  correlations <- c(correlations, cor_res)
 }
 ```
 
-![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-2.png)
+![](AirportFares_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-Looking at the scatterplots, we have identified no clear trend between fare prices and the delays inherent at different airports. Given this, we look to explore if operational efficiency within airlines affects the fares they are able to charge.
+Looking at all the graphs, there appears to be no trend between the average delay at an airport and fares on routes from that airport, but let's check the correlations to make sure.
+
+``` r
+mean(correlations[!is.na(correlations)])
+```
+
+    ## [1] 0.0677539
+
+Looking at the scatterplots and correlation, we have identified no clear trend between fare prices and the delays inherent at different airports. Given this, I look to explore if operational efficiency within airlines affects the fares they are able to charge on their routes.
 
 ``` r
 flight_data[is.na(flight_data)] <- 0
@@ -124,35 +130,24 @@ flight_data <- flight_data %>%
 airline_delay_by_airport <- flight_data %>%
   mutate(route = paste(origin_airport, destination_airport)) %>%
   group_by(airline_id, route) %>%
-  summarize(delay_minutes = mean(airline_delay))
+  summarize(delay_minutes = mean(airline_delay)) #airline_delay records any delay that is attributed to the airline rather than the airport, in minutes
 
-airline_delay_by_airport[1:2, ]
-```
-
-    ## # A tibble: 2 x 3
-    ## # Groups:   airline_id [1]
-    ##   airline_id   route delay_minutes
-    ##       <fctr>   <chr>         <dbl>
-    ## 1         AA ABQ DFW     0.7166667
-    ## 2         AA ABQ ORD     0.0000000
-
-``` r
 #Join delay information with fare price information
-fares_airline_caused_delays <- inner_join(airline_delay_by_airport, route_fares, by = c("airline_id", "route"))
+fares_airline_caused_delays <- inner_join(airline_delay_by_airport, route_fares, by = c("airline_id", "route")) %>%
+  select(c("airline_id", "route", "delay_minutes", "avg_fare"))
+
+fares_airline_caused_delays[1:3,]
 ```
 
-    ## Warning: Column `airline_id` joining factors with different levels,
-    ## coercing to character vector
-
-``` r
-fares_airline_caused_delays[1,]
-```
-
-    ## # A tibble: 1 x 6
+    ## # A tibble: 3 x 4
     ## # Groups:   airline_id [1]
-    ##   airline_id   route delay_minutes origin_airport distance avg_fare
-    ##        <chr>   <chr>         <dbl>         <fctr>    <int>    <dbl>
-    ## 1         AA ABQ DFW     0.7166667            ABQ      569 148.0924
+    ##   airline_id   route delay_minutes avg_fare
+    ##        <chr>   <chr>         <dbl>    <dbl>
+    ## 1         AA ABQ DFW     0.7166667 148.0924
+    ## 2         AA ABQ ORD     0.0000000 273.5734
+    ## 3         AA ALB CLT     0.2555556 162.2468
+
+So now for each airline, we have all of their routes, the average delay on that route (caused by the airline), and the average fare charged for that route. Hypothesis: as the delay increases, fares should decrease!
 
 ``` r
 #Limit delays to 15 minutes as significant outliers skew the results
@@ -161,14 +156,16 @@ fares_airline_caused_delays <- fares_airline_caused_delays[!is.null(fares_airlin
 
 unique_airlines <- unique(fares_airline_caused_delays$airline_id)
 
+airline_delay_cor <- numeric()
+
+i <- 0 #limit example graphs
 #For each airline, produce a scatterplot relating fare prices to airline delays
-i <- 0
 for(airline in unique_airlines)
 {
-  if(i<2)
+  selected_airline <- filter(fares_airline_caused_delays, airline_id == airline)
+  
+  if(i<1)
   {
-    selected_airline <- filter(fares_airline_caused_delays, airline_id == airline)
-    
     plot(selected_airline$delay_minutes, selected_airline$avg_fare, xlab="Delay", ylab="Fare", sub=airline)
     
     abline(lm(selected_airline$avg_fare ~ selected_airline$delay_minutes))
@@ -177,7 +174,22 @@ for(airline in unique_airlines)
     dev.off ()
   }
   i <- i+1
+  
+  cor_res<- cor(selected_airline$avg_fare, selected_airline$delay_minutes)
+  airline_delay_cor <- c(airline_delay_cor, cor_res)
 }
 ```
 
-![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-1.png)![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-2.png)
+![](AirportFares_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+Visually, I identified no trend across any scatterplot, but let's check the correlations to be sure!
+
+``` r
+mean(airline_delay_cor)
+```
+
+    ## [1] 0.004268668
+
+Nope, no trend! From these, it seems fare prices are not affected by either delays at airports or the average tardiness of the airline servicing the route.
+
+Next potential question: are fare prices affected by the delay of the route, independent of the airline? (I.E. Are more delayed routes cheaper?) TBD!!
